@@ -269,17 +269,6 @@ repeat (i <= n) {
 
 ---
 
-# 👥 Team Members & Contributions
-
-| Member   | Role                                      | Files Responsible                  |
-| -------- | ----------------------------------------- | ---------------------------------- |
-| Member 1 | Lexical Analyzer & Symbol Table Developer | `lexer.l`, `symboltable.h`         |
-| Member 2 | AST & Code Generation Developer           | `ast.h`, `codegen.h`               |
-| Member 3 | Runtime Execution & Parser Developer      | `executor.h`, `parser.y` (50%)     |
-| Member 4 | Intermediate Code & Parser Developer      | `intermediate.h`, `parser.y` (50%) |
-
----
-
 # 🎯 Project Highlights
 
 * Custom programming language creation
@@ -333,7 +322,7 @@ Educational Compiler & Interpreter Project
 
 # 👨‍💻 Developed By
 
-Addhyan Bhardwaj and Team
+Addhyan Bhardwaj
 
 ---
 
