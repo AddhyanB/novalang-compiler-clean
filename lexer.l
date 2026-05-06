@@ -6,31 +6,46 @@
 %}
 
 %%
-"letz"        { return INT; }
+
+"letz"        { return INT_TYPE; }
+
 "echoz"       { return PRINT; }
+"inputz"      { return INPUT; }
+
 "when"        { return IF; }
 "otherwise"   { return ELSE; }
-"repeat"      { return WHILE; }
+
+"repeat"      { return LOOP; }
 
 "<-"          { return ASSIGN; }
-"!"           { return SEMI; }
 
-"<="          { return LE; }
-">="          { return GE; }
 "=="          { return EQ; }
-"!="          { return NE; }
-"<"           { return LT; }
+"!="          { return NEQ; }
+">="          { return GTE; }
+"<="          { return LTE; }
 ">"           { return GT; }
+"<"           { return LT; }
 
 "{"           { return LBRACE; }
 "}"           { return RBRACE; }
+
 "("           { return LPAREN; }
 ")"           { return RPAREN; }
 
-[0-9]+        { yylval.num = atoi(yytext); return NUMBER; }
+"!"           { return SEMI; }
+
+\"[^\"]*\" {
+    yylval.str = strdup(yytext);
+    return STRING;
+}
+
+[0-9]+ {
+    yylval.str = strdup(yytext);
+    return NUMBER;
+}
 
 [a-zA-Z_][a-zA-Z0-9_]* {
-    yylval.id = strdup(yytext);
+    yylval.str = strdup(yytext);
     return ID;
 }
 
@@ -41,7 +56,12 @@
 
 [ \t\n]       { }
 
-.             { printf("Invalid token: %s\n", yytext); }
+. {
+    printf("Invalid token: %s\n", yytext);
+}
+
 %%
 
-int yywrap() { return 1; }
+int yywrap() {
+    return 1;
+}

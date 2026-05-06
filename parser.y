@@ -3,151 +3,350 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ast.h"
+#include "executor.h"
+
 int yylex();
 void yyerror(const char *s);
 
-/* -------- SYMBOL TABLE -------- */
-struct symbol {
-    char name[20];
-    int value;
-} symtab[100];
+struct AST *program_root = NULL;
 
-int symcount = 0;
+struct AST* connect_statements(struct AST *left, struct AST *right) {
 
-/* -------- OUTPUT BUFFER -------- */
-char output[10000] = "";
+    if(left == NULL)
+        return right;
 
-/* -------- FUNCTIONS -------- */
+    struct AST *node = create_node("PROGRAM");
 
-int exists(char *name){
-    for(int i=0;i<symcount;i++)
-        if(strcmp(symtab[i].name,name)==0) return i;
-    return -1;
-}
+    node->left = left;
+    node->right = right;
 
-void add_symbol(char *name){
-    if(exists(name)!=-1){
-        printf("Error: %s already declared\n",name);
-        exit(0);
-    }
-    strcpy(symtab[symcount].name,name);
-    symtab[symcount].value=0;
-    symcount++;
-}
-
-int get_value(char *name){
-    int i=exists(name);
-    if(i==-1){
-        printf("Error: %s not declared\n",name);
-        exit(0);
-    }
-    return symtab[i].value;
-}
-
-void set_value(char *name,int val){
-    int i=exists(name);
-    if(i==-1){
-        printf("Error: %s not declared\n",name);
-        exit(0);
-    }
-    symtab[i].value=val;
-}
-
-void add_output(int val){
-    char temp[50];
-    sprintf(temp,"%d\n",val);
-    strcat(output,temp);
+    return node;
 }
 %}
 
 %union {
-    int num;
-    char* id;
+
+    char* str;
+    struct AST* node;
 }
 
-%token INT PRINT IF ELSE WHILE
-%token <id> ID
-%token <num> NUMBER
-%token PLUS MINUS MUL DIV ASSIGN SEMI
-%token LT GT LE GE EQ NE
-%token LBRACE RBRACE LPAREN RPAREN
+%token INT_TYPE
+%token PRINT INPUT
+%token IF ELSE LOOP
 
-%type <num> expr condition
+%token <str> ID NUMBER STRING
+
+%token PLUS MINUS MUL DIV ASSIGN SEMI
+
+%token EQ NEQ GT LT GTE LTE
+
+%token LPAREN RPAREN
+%token LBRACE RBRACE
+
+%type <node> program stmt stmt_list expr term factor condition block
 
 %%
 
 program:
-    program stmt
+      stmt_list
+        {
+            $$ = $1;
+            program_root = $$;
+        }
+;
+
+stmt_list:
+      stmt_list stmt
+        {
+            $$ = connect_statements($1, $2);
+        }
+
     | stmt
+        {
+            $$ = $1;
+        }
 ;
 
 stmt:
-      INT ID SEMI
-        { add_symbol($2); }
+      INT_TYPE ID SEMI
+        {
+            $$ = create_op_node(
+                    "DECLARE",
+                    create_node($2),
+                    NULL
+                 );
+        }
 
     | ID ASSIGN expr SEMI
-        { set_value($1,$3); }
+        {
+            $$ = create_op_node(
+                    "=",
+                    create_node($1),
+                    $3
+                 );
+        }
+
+    | INPUT ID SEMI
+        {
+            $$ = create_op_node(
+                    "INPUT",
+                    create_node($2),
+                    NULL
+                 );
+        }
 
     | PRINT expr SEMI
-        { add_output($2); }
-
-    | IF LPAREN condition RPAREN block else_part
         {
-            if($3){
-                /* block already executed */
-            }
+            $$ = create_op_node(
+                    "PRINT",
+                    $2,
+                    NULL
+                 );
         }
 
-    | WHILE LPAREN condition RPAREN block
+    | PRINT STRING SEMI
         {
-            while($3){
-                /* simple loop re-evaluation */
-                /* NOTE: basic implementation for project */
-                break;
-            }
+            $$ = create_op_node(
+                    "PRINT_STRING",
+                    create_node($2),
+                    NULL
+                 );
         }
-;
 
-else_part:
-      ELSE block
-    | /* empty */
+    | IF LPAREN condition RPAREN block ELSE block
+        {
+            $$ = create_op_node(
+                    "IF",
+                    $3,
+                    create_op_node(
+                        "BLOCK",
+                        $5,
+                        $7
+                    )
+                 );
+        }
+
+    | LOOP LPAREN condition RPAREN block
+        {
+            $$ = create_op_node(
+                    "LOOP",
+                    $3,
+                    $5
+                 );
+        }
 ;
 
 block:
-    LBRACE program RBRACE
+      LBRACE stmt_list RBRACE
+        {
+            $$ = $2;
+        }
 ;
 
 condition:
-      expr LT expr  { $$ = $1 < $3; }
-    | expr GT expr  { $$ = $1 > $3; }
-    | expr LE expr  { $$ = $1 <= $3; }
-    | expr GE expr  { $$ = $1 >= $3; }
-    | expr EQ expr  { $$ = $1 == $3; }
-    | expr NE expr  { $$ = $1 != $3; }
+      expr GT expr
+        {
+            $$ = create_op_node(">", $1, $3);
+        }
+
+    | expr LT expr
+        {
+            $$ = create_op_node("<", $1, $3);
+        }
+
+    | expr EQ expr
+        {
+            $$ = create_op_node("==", $1, $3);
+        }
+
+    | expr NEQ expr
+        {
+            $$ = create_op_node("!=", $1, $3);
+        }
+
+    | expr GTE expr
+        {
+            $$ = create_op_node(">=", $1, $3);
+        }
+
+    | expr LTE expr
+        {
+            $$ = create_op_node("<=", $1, $3);
+        }
 ;
 
 expr:
-      expr PLUS expr  { $$ = $1 + $3; }
-    | expr MINUS expr { $$ = $1 - $3; }
-    | expr MUL expr   { $$ = $1 * $3; }
-    | expr DIV expr   { $$ = $1 / $3; }
-    | NUMBER          { $$ = $1; }
-    | ID              { $$ = get_value($1); }
+      expr PLUS term
+        {
+            $$ = create_op_node("+", $1, $3);
+        }
+
+    | expr MINUS term
+        {
+            $$ = create_op_node("-", $1, $3);
+        }
+
+    | term
+        {
+            $$ = $1;
+        }
+;
+
+term:
+      term MUL factor
+        {
+            $$ = create_op_node("*", $1, $3);
+        }
+
+    | term DIV factor
+        {
+            $$ = create_op_node("/", $1, $3);
+        }
+
+    | factor
+        {
+            $$ = $1;
+        }
+;
+
+factor:
+      NUMBER
+        {
+            $$ = create_node($1);
+        }
+
+    | ID
+        {
+            $$ = create_node($1);
+        }
+
+    | LPAREN expr RPAREN
+        {
+            $$ = $2;
+        }
 ;
 
 %%
 
-void yyerror(const char *s){
+int evaluate(struct AST *root) {
+
+    if(root == NULL)
+        return 0;
+
+    if(strcmp(root->value, "+") == 0)
+        return evaluate(root->left) + evaluate(root->right);
+
+    if(strcmp(root->value, "-") == 0)
+        return evaluate(root->left) - evaluate(root->right);
+
+    if(strcmp(root->value, "*") == 0)
+        return evaluate(root->left) * evaluate(root->right);
+
+    if(strcmp(root->value, "/") == 0)
+        return evaluate(root->left) / evaluate(root->right);
+
+    if(strcmp(root->value, ">") == 0)
+        return evaluate(root->left) > evaluate(root->right);
+
+    if(strcmp(root->value, "<") == 0)
+        return evaluate(root->left) < evaluate(root->right);
+
+    if(strcmp(root->value, "==") == 0)
+        return evaluate(root->left) == evaluate(root->right);
+
+    if(strcmp(root->value, "!=") == 0)
+        return evaluate(root->left) != evaluate(root->right);
+
+    if(strcmp(root->value, ">=") == 0)
+        return evaluate(root->left) >= evaluate(root->right);
+
+    if(strcmp(root->value, "<=") == 0)
+        return evaluate(root->left) <= evaluate(root->right);
+
+    if(isdigit(root->value[0]))
+        return atoi(root->value);
+
+    return get_value(root->value);
+}
+
+void execute(struct AST *root) {
+
+    if(root == NULL)
+        return;
+
+    if(strcmp(root->value, "PROGRAM") == 0) {
+
+        execute(root->left);
+        execute(root->right);
+    }
+
+    else if(strcmp(root->value, "=") == 0) {
+
+        int val = evaluate(root->right);
+
+        set_value(root->left->value, val);
+    }
+
+    else if(strcmp(root->value, "INPUT") == 0) {
+
+        int val;
+
+        scanf("%d", &val);
+
+        set_value(root->left->value, val);
+    }
+
+    else if(strcmp(root->value, "PRINT") == 0) {
+
+        printf("%d\n", evaluate(root->left));
+    }
+
+    else if(strcmp(root->value, "PRINT_STRING") == 0) {
+
+        char temp[100];
+
+        strcpy(temp, root->left->value);
+
+        int len = strlen(temp);
+
+        temp[len - 1] = '\0';
+
+        printf("%s\n", temp + 1);
+    }
+
+    else if(strcmp(root->value, "IF") == 0) {
+
+        if(evaluate(root->left)) {
+
+            execute(root->right->left);
+        }
+
+        else {
+
+            execute(root->right->right);
+        }
+    }
+
+    else if(strcmp(root->value, "LOOP") == 0) {
+
+        while(evaluate(root->left)) {
+
+            execute(root->right);
+        }
+    }
+}
+
+void yyerror(const char *s) {
+
     printf("Syntax Error\n");
 }
 
-int main(){
-    printf("Enter NovaLang code (Ctrl+Z then Enter):\n\n");
+int main() {
 
     yyparse();
 
-    printf("\n--- OUTPUT ---\n");
-    printf("%s", output);
+    execute(program_root);
 
     return 0;
 }
