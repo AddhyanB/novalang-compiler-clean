@@ -1,200 +1,342 @@
-# 🚀 NovaLang Compiler
+# 🚀 NovaLang Compiler & Interpreter
 
-![Language](https://img.shields.io/badge/Language-C-blue)
-![Tool](https://img.shields.io/badge/Tools-Flex%20%7C%20Bison-green)
-![Status](https://img.shields.io/badge/Status-Completed-success)
-![Project](https://img.shields.io/badge/Project-Compiler%20Design-orange)
+A custom programming language and compiler/interpreter project built using **Flex**, **Bison/Yacc**, and **C**.
 
----
+NovaLang is designed as an educational compiler project that demonstrates the complete workflow of a programming language, including:
 
-## 👨‍💻 Developed By
-
-**Addhyan Bhardwaj**
-
----
-
-## 📌 Project Overview
-
-NovaLang is a **custom programming language and compiler** built using **Lex (Flex)** and **Yacc (Bison)**.
-
-This project demonstrates the core phases of compiler design by creating a language from scratch and implementing its execution pipeline.
+* Lexical Analysis
+* Syntax Analysis
+* Abstract Syntax Tree (AST)
+* Intermediate Representation
+* Runtime Execution
+* Direct Output Generation
+* Control Flow Handling
+* Expression Evaluation
+* User Input Support
 
 ---
 
-## 🧠 NovaLang Syntax
+# 📌 Features
 
-```plaintext
+## ✅ Lexical Analysis
+
+* Tokenization using Flex
+* Custom NovaLang keywords
+* Operator recognition
+* Identifier and number handling
+
+## ✅ Parsing & Grammar Handling
+
+* Implemented using Bison/Yacc
+* Expression parsing
+* Operator precedence
+* Nested statements
+* Block handling
+
+## ✅ AST (Abstract Syntax Tree)
+
+* Expression tree generation
+* Arithmetic operation nodes
+* Condition nodes
+* Loop and statement nodes
+
+## ✅ Runtime Interpreter
+
+* Direct NovaLang execution
+* Variable storage and evaluation
+* Arithmetic expression execution
+* Conditional execution
+* Loop execution
+
+## ✅ Supported Language Features
+
+* Integer variables
+* Arithmetic operations
+* If–Else conditions
+* Loops
+* User input
+* String output
+
+---
+
+# 🧠 NovaLang Syntax
+
+## Variable Declaration
+
+```novalang
 letz a!
 letz b!
+```
 
-a <- 5!
-b <- 10!
+## Assignment
 
+```novalang
+a <- 10!
+b <- 20!
+```
+
+## Output
+
+```novalang
+echoz a!
+echoz "Hello World"!
+```
+
+## Input
+
+```novalang
+inputz a!
+```
+
+## If–Else
+
+```novalang
 when (a < b) {
+
     echoz a!
+
 } otherwise {
+
     echoz b!
 }
+```
 
-repeat (a < 8) {
-    a <- a + 1!
+## Loop
+
+```novalang
+repeat (a < 5) {
+
     echoz a!
+
+    a <- a + 1!
 }
 ```
 
 ---
 
-## ⚙️ Features
+# ⚙️ Technologies Used
 
-* ✔ Custom language (NovaLang)
-* ✔ Lexical Analysis (Flex)
-* ✔ Syntax Analysis (Bison/Yacc)
-* ✔ Symbol Table
-* ✔ Expression evaluation
-* ✔ If–Else control flow
-* ✔ Loop support (repeat)
-* ✔ Output execution
+| Technology   | Purpose                               |
+| ------------ | ------------------------------------- |
+| Flex         | Lexical Analysis                      |
+| Bison/Yacc   | Parsing & Grammar                     |
+| C Language   | Compiler & Interpreter Implementation |
+| GCC          | Compilation                           |
+| Git & GitHub | Version Control                       |
 
 ---
 
-## 🧱 Compiler Pipeline
+# 📂 Project Structure
+
+| File             | Purpose                    |
+| ---------------- | -------------------------- |
+| `lexer.l`        | Lexical Analyzer           |
+| `parser.y`       | Parser & Grammar Rules     |
+| `ast.h`          | AST Node Structures        |
+| `executor.h`     | Runtime Execution Engine   |
+| `codegen.h`      | C Code Generation          |
+| `symboltable.h`  | Symbol Table Management    |
+| `intermediate.h` | Intermediate Code Handling |
+| `README.md`      | Documentation              |
+| `sample.txt`     | Sample NovaLang Programs   |
+
+---
+
+# 🔄 Compiler Workflow
 
 ```text
-Source Code (NovaLang)
-        ↓
-Lexical Analysis (Flex)
-        ↓
-Token Stream
-        ↓
-Syntax Analysis (Yacc)
-        ↓
-Parse Tree
-        ↓
-Semantic Handling
-        ↓
-Execution / Output
+NovaLang Code
+      ↓
+Lexer
+      ↓
+Parser
+      ↓
+AST
+      ↓
+Intermediate Representation
+      ↓
+Interpreter / Execution
+      ↓
+Direct Output
 ```
 
 ---
 
-## 📂 Project Structure
+# ▶️ Compilation Commands
 
-```text
-novalang-compiler/
-│
-├── lexer.l        # Lexical Analyzer
-├── parser.y       # Syntax Analyzer
-├── sample.txt     # Sample Input
-├── README.md      # Documentation
-└── .gitignore
-```
-
----
-
-## ⚙️ How to Run
-
-### 🔧 Requirements
-
-* Flex (Lex)
-* Bison (Yacc)
-* GCC Compiler
-
----
-
-### 🛠️ Compilation
+## Generate Parser
 
 ```bash
 win_bison -d parser.y
+```
+
+## Generate Lexer
+
+```bash
 win_flex lexer.l
+```
+
+## Compile Project
+
+```bash
 gcc lex.yy.c parser.tab.c -o compiler.exe
 ```
 
----
-
-### ▶️ Run
+## Run Compiler
 
 ```bash
 .\compiler.exe
 ```
 
-Then enter code and press:
+---
 
+# 🧪 Sample Program
+
+```novalang
+letz a!
+letz b!
+
+a <- 10!
+b <- 20!
+
+echoz a + b!
 ```
-Ctrl + Z + Enter
+
+## ✅ Output
+
+```text
+30
 ```
 
 ---
 
-## 📄 Sample Input
+# 🧪 Sample Program — Table Printing
 
-```plaintext
-letz a!
-letz b!
+```novalang
+letz n!
+letz i!
 
-a <- 5!
-b <- 10!
+echoz "Enter Number:"!
 
-when (a < b) {
-    echoz a!
-} otherwise {
-    echoz b!
+inputz n!
+
+i <- 1!
+
+repeat (i <= 10) {
+
+    echoz n * i!
+
+    i <- i + 1!
+}
+```
+
+## ✅ Output
+
+```text
+5
+10
+15
+20
+25
+30
+35
+40
+45
+50
+```
+
+---
+
+# 🧪 Sample Program — Print Name N Times
+
+```novalang
+letz n!
+letz i!
+
+echoz "Enter Number of Times:"!
+
+inputz n!
+
+i <- 1!
+
+repeat (i <= n) {
+
+    echoz "Addhyan"!
+
+    i <- i + 1!
 }
 ```
 
 ---
 
-## 📌 Sample Output
+# 👥 Team Members & Contributions
+
+| Member   | Role                                      | Files Responsible                  |
+| -------- | ----------------------------------------- | ---------------------------------- |
+| Member 1 | Lexical Analyzer & Symbol Table Developer | `lexer.l`, `symboltable.h`         |
+| Member 2 | AST & Code Generation Developer           | `ast.h`, `codegen.h`               |
+| Member 3 | Runtime Execution & Parser Developer      | `executor.h`, `parser.y` (50%)     |
+| Member 4 | Intermediate Code & Parser Developer      | `intermediate.h`, `parser.y` (50%) |
+
+---
+
+# 🎯 Project Highlights
+
+* Custom programming language creation
+* Complete compiler/interpreter workflow
+* Runtime execution engine
+* Control-flow support
+* Expression evaluation
+* Educational compiler architecture
+* Beginner-friendly syntax design
+
+---
+
+# 🚀 Future Improvements
+
+* String variable support
+* Float execution support
+* Functions
+* Arrays
+* File handling
+* Better error handling
+* IDE/Web editor for NovaLang
+* Bytecode virtual machine
+* Syntax highlighting
+
+---
+
+# 📸 Example Execution
 
 ```text
+Enter Number:
 5
+5
+10
+15
+20
+25
+30
+35
+40
+45
+50
 ```
 
 ---
 
-## ⚠️ Limitations
+# 🏆 Project Type
 
-* Loop execution is simplified
-* No AST (Abstract Syntax Tree)
-* No optimization phase
-* No machine code generation
+Educational Compiler & Interpreter Project
 
 ---
 
-## 🔮 Future Improvements
+# 👨‍💻 Developed By
 
-* AST-based execution
-* Full loop handling
-* Function support
-* Optimization phase
-* Code generation
+Addhyan Bhardwaj and Team
 
 ---
 
-## 🎯 Learning Outcomes
+# ⭐ GitHub Repository
 
-* Understanding compiler phases
-* Working with Flex & Bison
-* Grammar design
-* Symbol table implementation
-* Execution flow handling
-
----
-
-## 💡 Important Note
-
-This project follows a **hybrid approach**:
-
-* Parsing → Lex & Yacc
-* Execution → Integrated interpreter logic
-
----
-
-## ⭐ Conclusion
-
-NovaLang Compiler is a practical implementation of compiler design concepts, demonstrating how a custom programming language can be created and executed.
-
----
-
-🔥 *A complete academic project showcasing real compiler concepts.*
-
----
+If you like this project, consider giving it a ⭐ on GitHub.
